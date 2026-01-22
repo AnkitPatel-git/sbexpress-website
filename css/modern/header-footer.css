@@ -1,0 +1,78 @@
+/**
+ * Header and Footer Styles
+ * Extracted from inline styles and improved
+ */
+
+/* Header Styles */
+.navbar-nav li a:hover {
+    color: var(--primary-color, #006db7);
+}
+
+.navbar-default .navbar-nav > li > a {
+    color: var(--primary-color, #006db7);
+    border-bottom: 3px solid transparent;
+    transition: all var(--transition-normal, 0.3s ease);
+}
+
+.navbar-default .navbar-nav > li > a:hover {
+    border-bottom-color: var(--primary-color, #006db7);
+}
+
+.header-inner {
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    transition: background-color var(--transition-normal);
+}
+
+.header-wrapper.solid-color .header-inner {
+    background-color: rgba(255, 255, 255, 1);
+    box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+.main-nav {
+    margin-top: 0 !important;
+    background: transparent;
+    transition: margin-top var(--transition-normal);
+}
+
+/* Footer Styles */
+#footer .widget {
+    margin-bottom: var(--spacing-lg, 30px);
+}
+
+#footer .widget ul > li {
+    padding-bottom: 0;
+}
+
+#footer .widget ul > li a {
+    padding-top: 0;
+    transition: color var(--transition-normal);
+}
+
+#footer .widget ul > li a:hover {
+    color: var(--primary-color, #006db7);
+}
+
+#footer .widget a img {
+    margin-bottom: var(--spacing-sm, 10px);
+}
+
+.footer-social-icons li a {
+    transition: all var(--transition-normal);
+}
+
+.footer-social-icons li a:hover {
+    transform: translateY(-3px);
+    color: var(--primary-color, #006db7);
+}
+
+/* Responsive Header */
+@media (max-width: 768px) {
+    .header-inner {
+        padding: var(--spacing-sm, 10px) 0;
+    }
+    
+    .navbar-header .logo img {
+        max-width: 150px;
+    }
+}

@@ -1,0 +1,2 @@
+[06-Oct-2016 12:36:54 Asia/Kolkata] PHP Warning:  unlink(../../assets/images/user-images/): Is a directory in /home/learnandearn/public_html/sm-admin/ajax/Update/Update-User-Photo.php on line 15
+[06-Oct-2016 12:37:13 Asia/Kolkata] PHP Warning:  unlink(../../assets/images/user-images/): Is a directory in /home/learnandearn/public_html/sm-admin/ajax/Update/Update-User-Photo.php on line 39

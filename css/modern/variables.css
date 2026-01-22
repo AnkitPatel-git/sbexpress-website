@@ -1,0 +1,76 @@
+/**
+ * CSS Variables for SB Express Cargo
+ * Modern CSS custom properties for theming
+ */
+
+:root {
+    /* Brand Colors */
+    --primary-color: #006db7;
+    --primary-dark: #005a9e;
+    --primary-light: #0088e0;
+    
+    /* Text Colors */
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --text-light: #999999;
+    --text-white: #ffffff;
+    
+    /* Background Colors */
+    --bg-white: #ffffff;
+    --bg-light: #f5f5f5;
+    --bg-dark: #2c3e50;
+    --bg-dark-blue: #1a4d7a;
+    
+    /* Status Colors */
+    --success-color: #4caf50;
+    --error-color: #d32f2f;
+    --warning-color: #ff9800;
+    --info-color: #2196f3;
+    
+    /* Spacing */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 20px;
+    --spacing-lg: 30px;
+    --spacing-xl: 40px;
+    
+    /* Typography */
+    --font-primary: 'Open Sans', Arial, sans-serif;
+    --font-heading: 'Raleway', Arial, sans-serif;
+    --font-size-base: 14px;
+    --font-size-sm: 12px;
+    --font-size-lg: 16px;
+    --font-size-xl: 18px;
+    --font-size-xxl: 24px;
+    
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+    
+    /* Border Radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    
+    /* Z-index layers */
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-modal: 1050;
+    --z-tooltip: 1070;
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-primary: #e0e0e0;
+        --text-secondary: #b0b0b0;
+        --bg-white: #1a1a1a;
+        --bg-light: #2a2a2a;
+    }
+}
