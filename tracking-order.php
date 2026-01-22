@@ -1,9 +1,10 @@
 <?php include 'sm-admin/core/database.php';?>
+<?php include 'sm-admin/core/tracking-api.php';?>
 <?php
 // Check if the "id" parameter is set in the URL
 if (isset($_GET['id'])) {
     if (!empty($_GET['id'])) {
-        $id = $_GET['id'];
+        $id = trim($_GET['id']);
     } else {
         header("Location: index.php");
         exit;
@@ -11,6 +12,19 @@ if (isset($_GET['id'])) {
 } else {
     header("Location: index.php");
     exit;
+}
+
+// Try API first
+$apiResponse = callTrackingAPI($id);
+$useAPI = hasValidTrackingData($apiResponse);
+$trackingData = null;
+$eventsData = array();
+
+if ($useAPI) {
+    $trackingData = $apiResponse['Response']['Tracking'][0];
+    $eventsData = $apiResponse['Response']['Events'] ?? array();
+    // Reverse events array to show latest first
+    $eventsData = array_reverse($eventsData);
 }
 ?>
 
@@ -63,69 +77,115 @@ if (isset($_GET['id'])) {
                     <div class="col-md-6">
                         <div class="custom-heading">
                             <h3>Tracking Details</h3>
-                        </div id="booking"><!-- .custom-heading.left end -->
+                        </div><!-- .custom-heading.left end -->
 
 <?php
 $bookingno = 0;
-// Query to fetch a single matching record from the "booking" table
-$query = "SELECT * FROM booking WHERE forwordingno = '$id' LIMIT 1";
 
-// Execute the query
-$result = mysqli_query($con, $query);
+if ($useAPI && $trackingData) {
+    // Display data from API
+    $track = $trackingData;
+    echo '<p style="font-size:14px">';
+    echo '<b>Waybill No: ' . htmlspecialchars($track['AWBNo'] ?? $id) . '</b><br/>';
+    echo 'Consignee: ' . htmlspecialchars($track['Consignee'] ?? 'N/A') . '<br/>';
+    echo 'Shipper Name: ' . htmlspecialchars($track['Shipper_Name'] ?? 'N/A') . '<br/>';
+    echo 'Booking Date: ' . htmlspecialchars($track['BookingDate1'] ?? ($track['BookingDate'] ?? 'N/A')) . '<br/>';
+    echo 'Origin: ' . htmlspecialchars($track['Origin'] ?? 'N/A') . '<br/>';
+    echo 'Destination: ' . htmlspecialchars($track['Destination'] ?? 'N/A') . '<br/>';
+    echo 'Status: <strong>' . htmlspecialchars($track['Status'] ?? 'N/A') . '</strong><br/>';
+    
+    if (!empty($track['ExpectedDeliveryDate'])) {
+        echo 'Expected Delivery Date: ' . htmlspecialchars($track['ExpectedDeliveryDate']) . '<br/>';
+    }
+    
+    if (!empty($track['DeliveryDate1'])) {
+        echo 'Delivery Date: ' . htmlspecialchars($track['DeliveryDate1']) . '<br/>';
+    }
+    
+    if (!empty($track['Weight'])) {
+        echo 'Weight: ' . htmlspecialchars($track['Weight']) . ' kg<br/>';
+    }
+    
+    if (!empty($track['ServiceName'])) {
+        echo 'Service: ' . htmlspecialchars($track['ServiceName']) . '<br/>';
+    }
+    
+    if (!empty($track['VendorAWBNo1'])) {
+        echo 'Vendor AWB No: ' . htmlspecialchars($track['VendorAWBNo1']) . '<br/>';
+    }
+    
+    if (!empty($track['Remark'])) {
+        echo 'Remark: ' . htmlspecialchars($track['Remark']) . '<br/>';
+    }
+    
+    // POD Image
+    if (!empty($track['PODImage']) && $track['PODImage'] !== 'No') {
+        echo 'POD Copy: <br/>';
+        echo '<img src="' . htmlspecialchars($track['PODImage']) . '" alt="POD Image" style="width: auto; height: 500px;" />';
+    }
+    
+    echo '</p>';
+} else {
+    // Fallback to database query
+    $id_escaped = mysqli_real_escape_string($con, $id);
+    $query = "SELECT * FROM booking WHERE forwordingno = '$id_escaped' LIMIT 1";
+    $result = mysqli_query($con, $query);
 
-if ($result) {
-    // Check if a matching record was found
-    if (mysqli_num_rows($result) == 1) {
-        $row = mysqli_fetch_assoc($result);
-        $bookingno = $row['id'];
-        echo '<p style="font-size:14px"><b>Waybill No: ' . $row['forwordingno'] . '</b><br/>
-              Customer Name: ' . $row['cust_name'] . '<br/>
-              Pickup Date: ' . $row['booking_date'] . '<br/>
-              From: ' . $row['pickuplocation'] . '<br/>
-              To: ' . $row['deliverylocation'] . '<br/>';
+    if ($result) {
+        // Check if a matching record was found
+        if (mysqli_num_rows($result) == 1) {
+            $row = mysqli_fetch_assoc($result);
+            $bookingno = $row['id'];
+            echo '<p style="font-size:14px"><b>Waybill No: ' . htmlspecialchars($row['forwordingno']) . '</b><br/>
+                  Customer Name: ' . htmlspecialchars($row['cust_name']) . '<br/>
+                  Pickup Date: ' . htmlspecialchars($row['booking_date']) . '<br/>
+                  From: ' . htmlspecialchars($row['pickuplocation']) . '<br/>
+                  To: ' . htmlspecialchars($row['deliverylocation']) . '<br/>';
 
-        // Additional query to fetch the expecteddeliverydate from the bookinglog table
-        $logQuery = "SELECT expecteddeliverydate FROM bookinglog WHERE bookingno = '$bookingno' ORDER BY id DESC LIMIT 1";
-        $logResult = mysqli_query($con, $logQuery);
+            // Additional query to fetch the expecteddeliverydate from the bookinglog table
+            $bookingno_escaped = mysqli_real_escape_string($con, $bookingno);
+            $logQuery = "SELECT expecteddeliverydate FROM bookinglog WHERE bookingno = '$bookingno_escaped' ORDER BY id DESC LIMIT 1";
+            $logResult = mysqli_query($con, $logQuery);
 
-        if ($logResult) {
-            if (mysqli_num_rows($logResult) == 1) {
-                $logRow = mysqli_fetch_assoc($logResult);
-                $expectedDate = $logRow['expecteddeliverydate'];
+            if ($logResult) {
+                if (mysqli_num_rows($logResult) == 1) {
+                    $logRow = mysqli_fetch_assoc($logResult);
+                    $expectedDate = $logRow['expecteddeliverydate'];
 
-                // Format date to display only the date part (YYYY-MM-DD)
-                $formattedDate = $expectedDate ? date('Y-m-d', strtotime($expectedDate)) : 'Not set';
+                    // Format date to display only the date part (YYYY-MM-DD)
+                    $formattedDate = $expectedDate ? date('Y-m-d', strtotime($expectedDate)) : 'Not set';
 
-                // Display status and formatted expected delivery date with one line break
-                 echo 'Status: ' . $row['status'] . '<br/>
-                      Expected Delivery Date: ' . $formattedDate . '<br/>
-                      POD Copy: <br/>
-                      <img src="https://track.sbexpresscargo.com/storage/'.$row['pod'].'" 
-                           alt="POD Image" 
-                           style="width: auto; height: 500px;" /></p>';
+                    // Display status and formatted expected delivery date with one line break
+                     echo 'Status: ' . htmlspecialchars($row['status']) . '<br/>
+                          Expected Delivery Date: ' . htmlspecialchars($formattedDate) . '<br/>
+                          POD Copy: <br/>
+                          <img src="https://track.sbexpresscargo.com/storage/'.htmlspecialchars($row['pod']).'" 
+                               alt="POD Image" 
+                               style="width: auto; height: 500px;" /></p>';
+                } else {
+                     echo 'Status: ' . htmlspecialchars($row['status']) . '<br/>
+                          Expected Delivery Date: Not available<br/>
+                          POD Copy: <br/>
+                          <img src="https://track.sbexpresscargo.com/storage/image/pod/2024/11/1732942364_1732940512_scouttrek.jpeg" 
+                               alt="POD Image" 
+                               style="width: auto; height: 500px;" /></p>';
+                }
+
+                // Free the result set for the log query
+                mysqli_free_result($logResult);
             } else {
-                 echo 'Status: ' . $row['status'] . '<br/>
-                      Expected Delivery Date: Not available<br/>
-                      POD Copy: <br/>
-                      <img src="https://track.sbexpresscargo.com/storage/image/pod/2024/11/1732942364_1732940512_scouttrek.jpeg" 
-                           alt="POD Image" 
-                           style="width: auto; height: 500px;" /></p>';
+                echo 'Log query failed: ' . mysqli_error($con);
             }
 
-            // Free the result set for the log query
-            mysqli_free_result($logResult);
         } else {
-            echo 'Log query failed: ' . mysqli_error($con);
+            echo '<p style="font-size:18px;color:red">No matching record found.</p>';
         }
 
+        // Free the result set for the initial query
+        mysqli_free_result($result);
     } else {
-        echo '<p style="font-size:18px;color:red">No matching record found.</p>';
+        echo '<p style="font-size:18px;color:red">Query failed: ' . mysqli_error($con) . '</p>';
     }
-
-    // Free the result set for the initial query
-    mysqli_free_result($result);
-} else {
-    echo 'Initial query failed: ' . mysqli_error($con);
 }
 ?>
 
@@ -141,7 +201,7 @@ if ($result) {
                         </div><!-- .custom-heading end -->
                         <div class="panel panel-default">
                         <div class="panel panel-heading">
-                            <h5 class="panel-title" style="font-family: 'Open Sans', Arial, sans-serif;">Waybill No : <?php echo $id; ?></h5>
+                            <h5 class="panel-title" style="font-family: 'Open Sans', Arial, sans-serif;">Waybill No : <?php echo htmlspecialchars($id); ?></h5>
                         </div>
                         <div class="">
                             <table class="table  table-bordered " id="example1" >
@@ -159,33 +219,68 @@ if ($result) {
                                 </thead>
                                 <tbody>
 <?php
-                                    // Query to fetch matching records from the "booking" table
-    $query = "SELECT * FROM bookinglog WHERE bookingno = '$bookingno' ORDER BY id DESC";
+if ($useAPI && !empty($eventsData)) {
+    // Display events from API
+    $index = 1;
+    foreach ($eventsData as $event) {
+        $eventDate = $event['EventDate1'] ?? $event['EventDate'] ?? 'N/A';
+        $eventTime = $event['EventTime1'] ?? $event['EventTime'] ?? '';
+        $location = $event['Location'] ?? 'N/A';
+        $status = $event['Status'] ?? 'N/A';
+        
+        // Format date and time
+        $dateTime = $eventDate;
+        if (!empty($eventTime)) {
+            $dateTime .= ' ' . $eventTime;
+        }
+        
+        echo '<tr>
+                <td>' . $index . '</td>
+                <td>' . htmlspecialchars($location) . '</td>
+                <td>-</td>
+                <td>' . htmlspecialchars($status) . '</td>
+                <td>' . htmlspecialchars($dateTime) . '</td>
+              </tr>';
+        $index++;
+    }
+} else {
+    // Fallback to database query
+    if ($bookingno > 0) {
+        // Query to fetch matching records from the "bookinglog" table
+        $bookingno_escaped = mysqli_real_escape_string($con, $bookingno);
+        $query = "SELECT * FROM bookinglog WHERE bookingno = '$bookingno_escaped' ORDER BY id DESC";
+        $result = mysqli_query($con, $query);
 
-    // Execute the query
-    $result = mysqli_query($con, $query);
-
-    if ($result) {
-        // Check if any matching records were found
-        if (mysqli_num_rows($result) > 0) {
-            $index = 1;
-            while ($row = mysqli_fetch_assoc($result)) {
-                 echo '<tr>
-                                        <td>' . $index . '</td> 
-                                        <td>'.$row['currentstatus'].'</td>
-                                         <td>'.$row['remark'].'</td>
-                                        <td>'.$row['status'].'</td>
-                                         <td>' . date('d-m-Y H:i:s', strtotime($row['deliverydate'])) . '</td>
-                                      
-                                        
+        if ($result) {
+            // Check if any matching records were found
+            if (mysqli_num_rows($result) > 0) {
+                $index = 1;
+                while ($row = mysqli_fetch_assoc($result)) {
+                     echo '<tr>
+                                    <td>' . $index . '</td> 
+                                    <td>' . htmlspecialchars($row['currentstatus']) . '</td>
+                                     <td>' . htmlspecialchars($row['remark']) . '</td>
+                                    <td>' . htmlspecialchars($row['status']) . '</td>
+                                     <td>' . date('d-m-Y H:i:s', strtotime($row['deliverydate'])) . '</td>
+                                  
+                                    
                         </tr>';
-                    $index++;
+                        $index++;
+                }
+            } else {
+                echo '<tr><td colspan="5" style="text-align:center;color:red;">No tracking events found.</td></tr>';
             }
-        } 
-        // Free the result set
-        mysqli_free_result($result);
-    } 
-mysqli_close($con);
+            // Free the result set
+            mysqli_free_result($result);
+        }
+    } else {
+        echo '<tr><td colspan="5" style="text-align:center;color:red;">No tracking information available.</td></tr>';
+    }
+}
+
+if (!$useAPI) {
+    mysqli_close($con);
+}
 ?>
                                 </tbody>
                             </table>
