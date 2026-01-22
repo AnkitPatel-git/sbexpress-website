@@ -1,4 +1,12 @@
-<!-- Header styles moved to css/modern/header-footer.css -->
+<style>
+.navbar-nav li a:hover{
+color:#006db7
+}
+.navbar-default .navbar-nav>li>a {
+    color: #006db7;
+    border-bottom: 3px solid transparent;
+}
+</style>
 <div class="header-wrapper header-transparent">
             <!-- .header.header-style01 start -->
             <header id="header"  class="header-style01">
@@ -110,65 +118,23 @@
 
             </header><!-- .header.header-style01 -->
         </div>
-<!-- Modern tracking script - loads after jQuery for compatibility -->
+<script src="js/jquery-2.1.4.min.js"></script>
 <script>
-// Modern tracking functionality (works with or without jQuery)
-(function() {
-    'use strict';
-    function initTracking() {
-        const searchInput = document.getElementById('awb_search');
-        const searchButton = document.getElementById('target');
-        
-        if (searchInput && searchButton) {
-            const handleSearch = () => {
-                const awbNumber = searchInput.value.trim();
-                if (awbNumber && awbNumber.length >= 3) {
-                    window.location.href = 'tracking-order.php?id=' + encodeURIComponent(awbNumber);
-                } else if (awbNumber.length > 0) {
-                    // Show error for invalid input
-                    let errorDiv = document.getElementById('awb-error');
-                    if (!errorDiv) {
-                        errorDiv = document.createElement('div');
-                        errorDiv.id = 'awb-error';
-                        errorDiv.className = 'awb-error-message';
-                        errorDiv.style.cssText = 'color: #d32f2f; font-size: 12px; margin-top: 5px; padding: 5px;';
-                        searchInput.parentElement.appendChild(errorDiv);
-                    }
-                    errorDiv.textContent = 'Please enter a valid AWB number';
-                    errorDiv.style.display = 'block';
-                    setTimeout(() => { errorDiv.style.display = 'none'; }, 3000);
-                }
-            };
-            
-            searchButton.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleSearch();
-            });
-            
-            searchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleSearch();
-                }
-            });
-            
-            // Enhanced UX: focus styling
-            searchInput.addEventListener('focus', function() {
-                this.style.outline = '2px solid #006db7';
-                this.style.outlineOffset = '2px';
-            });
-            
-            searchInput.addEventListener('blur', function() {
-                this.style.outline = '';
-            });
-        }
+jQuery(document).ready(function() {
+    $("#target").click(function() {
+        var id = $('#awb_search').val();
+       window.location.href = 'tracking-order.php?id='+id;
+    });
+    $('#awb_search').bind("enterKey",function(e){
+        var id = $('#awb_search').val();
+        window.location.href = 'tracking-order.php?id='+id;
+    });
+    $('#awb_search').keyup(function(e){
+    if(e.keyCode == 13)
+    {
+      $(this).trigger("enterKey");
     }
-    
-    // Initialize when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initTracking);
-    } else {
-        initTracking();
-    }
-})();
+    });
+});
+
 </script>

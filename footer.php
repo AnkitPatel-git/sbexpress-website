@@ -1,4 +1,17 @@
-<!-- Footer styles moved to css/modern/header-footer.css -->
+<style>
+#footer .widget{
+
+}
+#footer .widget ul > li {
+    padding-bottom: 0px;
+}
+#footer .widget ul > li a{
+padding-top:0px;
+}
+#footer .widget a img{
+margin-bottom:10px
+}
+</style>
 <div id="footer-wrapper" class="footer-dark">
     <footer id="footer">
         <div class="container">

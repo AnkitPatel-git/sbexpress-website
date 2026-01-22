@@ -11,55 +11,35 @@
 
         <!-- Stylesheets -->
        <?php include 'link.php'; ?>
-       <!-- Styles moved to css/modern/components.css -->
-       <style>
-       /* Service page specific styles */
-       .morecontent span {
-           display: none;
-       }
-       .morelink {
-           display: inherit;
-           color: var(--primary-color, #006db7);
-           cursor: pointer;
-           transition: color var(--transition-normal, 0.3s ease);
-       }
-       .morelink:hover {
-           color: var(--primary-dark, #005a9e);
-       }
-       .center-container {
-           display: flex;
-           justify-content: center;
-           align-items: center;
-           height: 100px;
-           padding: var(--spacing-md, 20px);
-       }
-       .verification-bazaar-button {
-           display: inline-block;
-           max-width: 650px;
-           width: 100%;
-           background-color: #89b3c7;
-           color: #990000;
-           border: none;
-           padding: var(--spacing-md, 20px);
-           font-size: clamp(20px, 4vw, 30px);
-           font-weight: 800;
-           border-radius: var(--radius-lg, 20px);
-           text-align: center;
-           text-decoration: none;
-           transition: all var(--transition-normal, 0.3s ease);
-           box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
-       }
-       .verification-bazaar-button:hover {
-           transform: translateY(-3px);
-           box-shadow: var(--shadow-md, 0 4px 8px rgba(0, 0, 0, 0.15));
-           background-color: #7aa5b8;
-       }
-       @media (max-width: 768px) {
-           .verification-bazaar-button {
-               font-size: 20px;
-               padding: var(--spacing-sm, 15px);
-           }
-       }
+       <style type="text/css">
+          .morecontent span {
+    display: none;
+}
+.morelink {
+    display: inherit;
+    color:#fac312
+}
+
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+.verification-bazaar-button {
+    display: inline-block;  
+    width: 650px;  
+    /*background-color: #007bff;*/
+    background-color: #89b3c7; 
+    color: #990000;
+    border: none;
+    padding: 20px;  
+    font-size:30px;
+    font-weight: 800;
+    border-radius: 20px;
+    text-align: center; 
+    text-decoration: none;  
+}
        </style>    
     </head>
 

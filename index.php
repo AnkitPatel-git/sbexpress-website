@@ -18,12 +18,8 @@
     </head>
     
     <body>
-      <!-- Skip to main content for accessibility -->
-      <a href="#main-content" class="skip-to-main">Skip to main content</a>
       
     <?php include'header.php' ?>
-      
-      <main id="main-content">
        <!-- .header-wrapper end -->
 
         <div id="masterslider" class="master-slider ms-skin-default mb-0">
@@ -537,7 +533,7 @@ include</h3>
             </div><!-- .container end -->
         </div><!-- .page-content.bkg-dark-blue end -->
 
-      </main><!-- #main-content end -->
+        
 
         
 <?php include'footer.php'; ?>

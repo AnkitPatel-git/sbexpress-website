@@ -214,23 +214,12 @@ $(document).ready(function(){
         type: 'POST',
         data: $form.serialize(),
         beforeSend: function() {
-          var $button = $('#contact-form button');
-          $button.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Sending...');
+          $('#contact-form button').html('red');
         },
         success: function(result) {
-          var $button = $('#contact-form button');
-          $button.prop('disabled', false).html('Send');
+          $('#contact-form button').html('Save');
           notr();
-          setTimeout(function(){ window.location.href = 'contact.php' }, 1200);
-        },
-        error: function() {
-          var $button = $('#contact-form button');
-          $button.prop('disabled', false).html('Send');
-          new PNotify({
-            title: 'Error',
-            text: 'Failed to send message. Please try again.',
-            type: 'error',
-          });
+          setTimeout(function(){ window.location.href = 'contact-simple.php' }, 1200);
         }
     });
   });
