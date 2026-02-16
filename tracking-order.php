@@ -14,17 +14,32 @@ if (isset($_GET['id'])) {
     exit;
 }
 
-// Try API first
-$apiResponse = callTrackingAPI($id);
-$useAPI = hasValidTrackingData($apiResponse);
+// Prefer our DB: if AWB exists in our booking table, use only DB data
+$bookingno = 0;
+$id_escaped = mysqli_real_escape_string($con, $id);
+$dbCheck = mysqli_query($con, "SELECT id FROM booking WHERE forwordingno = '$id_escaped' LIMIT 1");
+$awbExistsInDb = ($dbCheck && mysqli_num_rows($dbCheck) === 1);
+if ($awbExistsInDb) {
+    $row = mysqli_fetch_assoc($dbCheck);
+    $bookingno = (int) $row['id'];
+    mysqli_free_result($dbCheck);
+}
+
+$useAPI = false;
 $trackingData = null;
 $eventsData = array();
+$podImageUrl = null;
 
-if ($useAPI) {
-    $trackingData = $apiResponse['Response']['Tracking'][0];
-    $eventsData = $apiResponse['Response']['Events'] ?? array();
-    // Reverse events array to show latest first
-    $eventsData = array_reverse($eventsData);
+// Only use API when AWB does NOT exist in our database
+if (!$awbExistsInDb) {
+    $apiResponse = callTrackingAPI($id);
+    $useAPI = hasValidTrackingData($apiResponse);
+    if ($useAPI) {
+        $trackingData = $apiResponse['Response']['Tracking'][0];
+        $eventsData = $apiResponse['Response']['Events'] ?? array();
+        $eventsData = array_reverse($eventsData);
+        $podImageUrl = callPODImageAPI($id, 'A');
+    }
 }
 ?>
 
@@ -80,8 +95,6 @@ if ($useAPI) {
                         </div><!-- .custom-heading.left end -->
 
 <?php
-$bookingno = 0;
-
 if ($useAPI && $trackingData) {
     // Display data from API
     $track = $trackingData;
@@ -118,10 +131,14 @@ if ($useAPI && $trackingData) {
         echo 'Remark: ' . htmlspecialchars($track['Remark']) . '<br/>';
     }
     
-    // POD Image
-    if (!empty($track['PODImage']) && $track['PODImage'] !== 'No') {
+    // POD Image - from PODImage API first, then from tracking response
+    $podSrc = $podImageUrl;
+    if (empty($podSrc) && !empty($track['PODImage']) && $track['PODImage'] !== 'No') {
+        $podSrc = $track['PODImage'];
+    }
+    if (!empty($podSrc)) {
         echo 'POD Copy: <br/>';
-        echo '<img src="' . htmlspecialchars($track['PODImage']) . '" alt="POD Image" style="width: auto; height: 500px;" />';
+        echo '<img src="' . htmlspecialchars($podSrc) . '" alt="POD Image" style="max-width:100%; height: auto; max-height: 500px;" />';
     }
     
     echo '</p>';
